@@ -5,7 +5,7 @@ import ComposeForm from './components/ComposeForm';
 import Inbox from './components/Inbox';
 import Sent from './components/Sent';
 
-const API = 'https://tmail-backend-oj1j.onrender.com';
+const API = 'https://api.toster.lol';
 
 function App() {
   const [mode, setMode] = useState('login');
@@ -24,7 +24,7 @@ function App() {
   const [sortBySent, setSortBySent] = useState('date-desc');
 
   const [error, setError] = useState('');
-  const [view, setView] = useState('inbox'); // 'inbox' | 'sent'
+  const [view, setView] = useState('inbox');
 
   const loggedIn = Boolean(token);
 
@@ -171,7 +171,6 @@ function App() {
         gap: '20px'
       }}
     >
-      {/* Left side: Compose */}
       <div
         className="left-panel"
         style={{
@@ -198,7 +197,6 @@ function App() {
         </button>
       </div>
 
-      {/* Right side: Inbox/Sent */}
       <div
         className="right-panel"
         style={{
