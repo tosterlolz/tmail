@@ -6,6 +6,7 @@ import Inbox from './components/Inbox';
 import Sent from './components/Sent';
 
 const API = 'https://api.toster.lol';
+const ver = '1.1.8'
 
 function App() {
   const [mode, setMode] = useState('login');
@@ -35,7 +36,7 @@ function App() {
     }
   }, [loggedIn]);
 
-  // ⏱️ Auto refresh every 5 seconds
+  // Auto refresh co 2 sekundy
   useEffect(() => {
     if (!loggedIn) return;
 
@@ -45,7 +46,7 @@ function App() {
       } else if (view === 'sent') {
         loadSent();
       }
-    }, 5000);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [loggedIn, view]);
@@ -211,6 +212,9 @@ function App() {
         <button onClick={logout} style={{ backgroundColor: '#d9534f' }}>
           Logout
         </button>
+        <div style={{ fontSize: '0.9em', color: '#888', padding: '10px 0' }}> 
+          Version: {ver}
+        </div>
       </div>
 
       <div
