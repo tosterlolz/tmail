@@ -35,6 +35,21 @@ function App() {
     }
   }, [loggedIn]);
 
+  // ⏱️ Auto refresh every 5 seconds
+  useEffect(() => {
+    if (!loggedIn) return;
+
+    const interval = setInterval(() => {
+      if (view === 'inbox') {
+        loadInbox();
+      } else if (view === 'sent') {
+        loadSent();
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [loggedIn, view]);
+
   const saveToken = (tok) => {
     localStorage.setItem('token', tok);
     setToken(tok);
