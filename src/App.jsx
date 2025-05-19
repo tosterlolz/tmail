@@ -152,7 +152,8 @@ function App() {
         setError(data.message || 'Failed to load sent messages');
       }
     } catch (err) {
-      setError('Fetch error');
+      // SPIERDALAJ Z TYM CHUJOSTWEM
+      // setError('Fetch error');
       console.error(err);
     }
   };
