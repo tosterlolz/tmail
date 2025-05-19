@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
 import Inbox from './components/Inbox';
 import Sent from './components/Sent';
 import AuthForm from './components/AuthForm';
+import "./App.css"
 
 const API = 'https://api.toster.lol';
 
@@ -158,87 +158,110 @@ function App() {
 
   if (!loggedIn) {
     return (
-      <AuthForm
-        mode={mode}
-        setMode={setMode}
-        username={username}
-        setUsername={setUsername}
-        password={password}
-        setPassword={setPassword}
-        error={error}
-        onLogin={login}
-        onRegister={register}
-      />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-blue-600 via-blue-400 to-sky-300">
+        <div className="bg-white/80 shadow-2xl rounded-xl p-8 w-full max-w-md backdrop-blur-md">
+          <AuthForm
+            mode={mode}
+            setMode={setMode}
+            username={username}
+            setUsername={setUsername}
+            password={password}
+            setPassword={setPassword}
+            error={error}
+            onLogin={login}
+            onRegister={register}
+          />
+        </div>
+      </div>
     );
   }
 
   return (
-    <div
-      className="app-container"
-      style={{
-        display: 'flex',
-        height: '100vh',
-        minWidth: '70vw',
-        padding: 10,
-        flexDirection: 'column',
-      }}
-    >
-      <header>
-        <h2>TMail</h2>
-        <div>
-          <span style={{ marginRight: 8 }}>Logged in as <b>{username}</b></span>
-          <button onClick={logout}>Logout</button>
+    <div className="min-h-screen flex flex-col bg-gradient-to-tr from-blue-50 via-white to-blue-200">
+      <header className="flex items-center justify-between px-10 py-6 bg-white/90 shadow-md">
+        <div className="flex items-center gap-4">
+          <img src="/tm.png" alt="logo" className="h-14 w-14 rounded-lg shadow" />
+          <h2 className="text-3xl font-extrabold tracking-tight text-blue-700">TMail</h2>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-gray-700">
+            <span className="font-semibold text-blue-800">{username}</span>
+          </span>
+          <button
+            className="ml-2 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 rounded-lg text-white font-semibold shadow transition"
+            onClick={logout}
+          >
+            Logout
+          </button>
         </div>
       </header>
-      <main style={{ display: 'flex', flex: 1, gap: '32px' }}>
-        <section style={{ flex: 1 }}>
-          <Inbox
-            messages={inbox}
-            onRefresh={loadInbox}
-            sortBy={inboxSortBy}
-            setSortBy={setInboxSortBy}
-            onReply={handleReply}
-          />
+      <main className="flex-1 flex flex-col md:flex-row gap-8 px-8 py-10">
+        <section className="w-full md:w-1/2">
+          <div className="bg-white rounded-2xl shadow-lg p-5 h-full">
+            <Inbox
+              messages={inbox}
+              onRefresh={loadInbox}
+              sortBy={inboxSortBy}
+              setSortBy={setInboxSortBy}
+              onReply={handleReply}
+            />
+          </div>
         </section>
-        <section style={{ flex: 1 }}>
-          <Sent
-            messages={sent}
-            onRefresh={loadSent}
-            sortBy={sentSortBy}
-            setSortBy={setSentSortBy}
-            onReply={handleReply}
-          />
+        <section className="w-full md:w-1/2">
+          <div className="bg-white rounded-2xl shadow-lg p-5 h-full">
+            <Sent
+              messages={sent}
+              onRefresh={loadSent}
+              sortBy={sentSortBy}
+              setSortBy={setSentSortBy}
+              onReply={handleReply}
+            />
+          </div>
         </section>
-        <section style={{ flex: 1, maxWidth: 350 }}>
-          <h3>Send Mail</h3>
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              sendMail();
-            }}
-          >
-            <input
-              placeholder="To"
-              value={to}
-              onChange={e => setTo(e.target.value)}
-              required
-            />
-            <input
-              placeholder="Subject"
-              value={subject}
-              onChange={e => setSubject(e.target.value)}
-            />
-            <textarea
-              placeholder="Body"
-              value={body}
-              onChange={e => setBody(e.target.value)}
-              required
-            />
-            <button type="submit">Send</button>
-          </form>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
+        <section className="w-full md:w-1/3 max-w-md">
+          <div className="bg-white/90 rounded-2xl shadow-xl p-6 sticky top-10">
+            <h3 className="text-2xl font-bold mb-3 text-blue-700">Send Mail</h3>
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={e => {
+                e.preventDefault();
+                sendMail();
+              }}
+            >
+              <input
+                className="border border-blue-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50"
+                placeholder="To"
+                value={to}
+                onChange={e => setTo(e.target.value)}
+                required
+              />
+              <input
+                className="border border-blue-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50"
+                placeholder="Subject"
+                value={subject}
+                onChange={e => setSubject(e.target.value)}
+              />
+              <textarea
+                className="border border-blue-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 min-h-[80px]"
+                placeholder="Body"
+                value={body}
+                onChange={e => setBody(e.target.value)}
+                required
+              />
+              <button
+                type="submit"
+                className="bg-gradient-to-r from-blue-600 to-sky-400 hover:from-blue-700 hover:to-sky-500 text-white rounded-lg px-4 py-2 font-semibold shadow transition"
+              >
+                Send
+              </button>
+            </form>
+            {error && <p className="text-red-600 mt-2">{error}</p>}
+          </div>
         </section>
       </main>
+      <footer className="py-4 text-center text-gray-500 text-sm">
+        &copy; {new Date().getFullYear()} <span className="font-bold text-blue-700">TMail</span>. All rights reserved.
+      </footer>
     </div>
   );
 }
