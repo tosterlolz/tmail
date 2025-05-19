@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Inbox from './components/Inbox';
-import Sent from './components/Sent';
+import Message from './components/Message';
 import AuthForm from './components/AuthForm';
-import "./App.css"
+import "./App.css";
 
 const API = 'https://api.toster.lol';
 
@@ -136,7 +135,6 @@ function App() {
     }
   };
 
-  // --- REPLY FUNCTIONALITY ---
   const handleReply = async (parentId, replyBody) => {
     setError('');
     const res = await fetch(`${API}/tmail/reply`, {
@@ -156,10 +154,16 @@ function App() {
     }
   };
 
+  // Łączymy inbox i sent, nadając im typ, sortujemy po dacie malejąco
+  const mergedMessages = [
+    ...inbox.map(msg => ({ ...msg, __type: 'inbox' })),
+    ...sent.map(msg => ({ ...msg, __type: 'sent' })),
+  ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
   if (!loggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-blue-600 via-blue-400 to-sky-300">
-        <div className="bg-white/80 shadow-2xl rounded-xl p-8 w-full max-w-md backdrop-blur-md">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-950">
+        <div className="bg-slate-900/80 shadow-2xl rounded-xl p-8 w-full max-w-md backdrop-blur-md border border-slate-800">
           <AuthForm
             mode={mode}
             setMode={setMode}
@@ -177,18 +181,18 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-tr from-blue-50 via-white to-blue-200">
-      <header className="flex items-center justify-between px-10 py-6 bg-white/90 shadow-md">
+    <div className="min-h-screen flex flex-col bg-gradient-to-tr from-slate-900 via-slate-950 to-blue-950 text-slate-100">
+      <header className="flex items-center justify-between px-10 py-6 bg-slate-900/90 shadow-md border-b border-slate-800">
         <div className="flex items-center gap-4">
           <img src="/tm.png" alt="logo" className="h-14 w-14 rounded-lg shadow" />
-          <h2 className="text-3xl font-extrabold tracking-tight text-blue-700">TMail</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight text-blue-300">TMail</h2>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-gray-700">
-            <span className="font-semibold text-blue-800">{username}</span>
+          <span className="text-slate-300">
+            <span className="font-semibold text-blue-200">{username}</span>
           </span>
           <button
-            className="ml-2 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 rounded-lg text-white font-semibold shadow transition"
+            className="ml-2 px-4 py-2 bg-gradient-to-r from-red-700 to-pink-700 hover:from-red-800 hover:to-pink-800 rounded-lg text-white font-semibold shadow transition border border-slate-800"
             onClick={logout}
           >
             Logout
@@ -196,31 +200,38 @@ function App() {
         </div>
       </header>
       <main className="flex-1 flex flex-col md:flex-row gap-8 px-8 py-10">
-        <section className="w-full md:w-1/2">
-          <div className="bg-white rounded-2xl shadow-lg p-5 h-full">
-            <Inbox
-              messages={inbox}
-              onRefresh={loadInbox}
-              sortBy={inboxSortBy}
-              setSortBy={setInboxSortBy}
-              onReply={handleReply}
-            />
-          </div>
-        </section>
-        <section className="w-full md:w-1/2">
-          <div className="bg-white rounded-2xl shadow-lg p-5 h-full">
-            <Sent
-              messages={sent}
-              onRefresh={loadSent}
-              sortBy={sentSortBy}
-              setSortBy={setSentSortBy}
-              onReply={handleReply}
-            />
+        <section className="w-full md:w-2/3">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <h3 className="text-2xl font-extrabold text-blue-200">All Messages</h3>
+              <button
+                className="px-3 py-1 bg-blue-700 hover:bg-blue-800 text-white rounded transition text-sm"
+                onClick={() => { loadInbox(); loadSent(); }}
+              >
+                Refresh
+              </button>
+            </div>
+            <ul className="space-y-6">
+              {mergedMessages.length === 0 ? (
+                <li className="text-slate-500">No messages</li>
+              ) : (
+                mergedMessages.map(msg => (
+                  <li key={msg.id}>
+                    <Message
+                      message={msg}
+                      onReply={handleReply}
+                      replies={msg.replies || []}
+                      accent={msg.__type === 'sent' ? 'green' : 'blue'}
+                    />
+                  </li>
+                ))
+              )}
+            </ul>
           </div>
         </section>
         <section className="w-full md:w-1/3 max-w-md">
-          <div className="bg-white/90 rounded-2xl shadow-xl p-6 sticky top-10">
-            <h3 className="text-2xl font-bold mb-3 text-blue-700">Send Mail</h3>
+          <div className="bg-slate-900/90 rounded-2xl shadow-xl p-6 sticky top-10 border border-slate-800">
+            <h3 className="text-2xl font-bold mb-3 text-blue-200">Send Mail</h3>
             <form
               className="flex flex-col gap-4"
               onSubmit={e => {
@@ -229,20 +240,20 @@ function App() {
               }}
             >
               <input
-                className="border border-blue-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50"
+                className="border border-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-700 bg-slate-800 text-white"
                 placeholder="To"
                 value={to}
                 onChange={e => setTo(e.target.value)}
                 required
               />
               <input
-                className="border border-blue-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50"
+                className="border border-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-700 bg-slate-800 text-white"
                 placeholder="Subject"
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
               />
               <textarea
-                className="border border-blue-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 min-h-[80px]"
+                className="border border-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-700 bg-slate-800 text-white min-h-[80px]"
                 placeholder="Body"
                 value={body}
                 onChange={e => setBody(e.target.value)}
@@ -250,17 +261,17 @@ function App() {
               />
               <button
                 type="submit"
-                className="bg-gradient-to-r from-blue-600 to-sky-400 hover:from-blue-700 hover:to-sky-500 text-white rounded-lg px-4 py-2 font-semibold shadow transition"
+                className="bg-gradient-to-r from-blue-700 to-sky-700 hover:from-blue-800 hover:to-sky-800 text-white rounded-lg px-4 py-2 font-semibold shadow transition border border-slate-700"
               >
                 Send
               </button>
             </form>
-            {error && <p className="text-red-600 mt-2">{error}</p>}
+            {error && <p className="text-red-400 mt-2">{error}</p>}
           </div>
         </section>
       </main>
-      <footer className="py-4 text-center text-gray-500 text-sm">
-        &copy; {new Date().getFullYear()} <span className="font-bold text-blue-700">TMail</span>. All rights reserved.
+      <footer className="py-4 text-center text-slate-600 text-sm border-t border-slate-800">
+        &copy; {new Date().getFullYear()} <span className="font-bold text-blue-300">TMail</span>. All rights reserved.
       </footer>
     </div>
   );
