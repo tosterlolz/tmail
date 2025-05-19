@@ -1,8 +1,9 @@
 import React from 'react';
 import SortSelect from './SortSelect';
+import Message from './Message';
 
-export default function Inbox({ messages, onRefresh, sortBy, setSortBy }) {
-  const sorted = [...messages].sort((a, b) => {
+export default function Inbox({ messages, onRefresh, sortBy, setSortBy, onReply }) {
+  const sorted = [...(messages || [])].sort((a, b) => {
     switch (sortBy) {
       case 'date-asc': return new Date(a.timestamp) - new Date(b.timestamp);
       case 'date-desc': return new Date(b.timestamp) - new Date(a.timestamp);
@@ -20,8 +21,7 @@ export default function Inbox({ messages, onRefresh, sortBy, setSortBy }) {
       <ul>
         {sorted.map(msg => (
           <li key={msg.id}>
-            <strong>{msg.subject}</strong> from {msg.from}<br />
-            {msg.body}
+            <Message message={msg} onReply={onReply} replies={msg.replies || []} />
           </li>
         ))}
       </ul>

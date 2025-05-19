@@ -1,55 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import AuthForm from './components/AuthForm';
-import ComposeForm from './components/ComposeForm';
 import Inbox from './components/Inbox';
 import Sent from './components/Sent';
+import AuthForm from './components/AuthForm';
 
 const API = 'https://api.toster.lol';
-const ver = '1.1.8'
 
 function App() {
-  const [mode, setMode] = useState('login');
+  const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [username, setUsername] = useState(localStorage.getItem('username') || '');
   const [password, setPassword] = useState('');
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
-
+  const [inbox, setInbox] = useState([]);
+  const [sent, setSent] = useState([]);
+  const [mode, setMode] = useState('login');
+  const [error, setError] = useState('');
   const [to, setTo] = useState('');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
-
-  const [inbox, setInbox] = useState([]);
-  const [sent, setSent] = useState([]);
-
-  const [sortByInbox, setSortByInbox] = useState('date-desc');
-  const [sortBySent, setSortBySent] = useState('date-desc');
-
-  const [error, setError] = useState('');
-  const [view, setView] = useState('inbox');
-
-  const loggedIn = Boolean(token);
+  const [inboxSortBy, setInboxSortBy] = useState('date-desc');
+  const [sentSortBy, setSentSortBy] = useState('date-desc');
 
   useEffect(() => {
-    if (loggedIn) {
+    if (token) {
       loadInbox();
       loadSent();
     }
-  }, [loggedIn]);
+    // eslint-disable-next-line
+  }, [token]);
 
-  // Auto refresh co 2 sekundy
-  useEffect(() => {
-    if (!loggedIn) return;
-
-    const interval = setInterval(() => {
-      if (view === 'inbox') {
-        loadInbox();
-      } else if (view === 'sent') {
-        loadSent();
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [loggedIn, view]);
+  const loggedIn = !!token;
 
   const saveToken = (tok) => {
     localStorage.setItem('token', tok);
@@ -98,7 +77,7 @@ function App() {
     }
   };
 
-  const sendMail = async () => {
+  const sendMail = async (replyToId = null) => {
     setError('');
     const res = await fetch(`${API}/tmail/send`, {
       method: 'POST',
@@ -106,7 +85,7 @@ function App() {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + token,
       },
-      body: JSON.stringify({ to, subject, body })
+      body: JSON.stringify({ to, subject, body, replyToId })
     });
     if (res.ok) {
       setTo('');
@@ -153,9 +132,27 @@ function App() {
         setError(data.message || 'Failed to load sent messages');
       }
     } catch (err) {
-      // SPIERDALAJ Z TYM CHUJOSTWEM
-      // setError('Fetch error');
       console.error(err);
+    }
+  };
+
+  // --- REPLY FUNCTIONALITY ---
+  const handleReply = async (parentId, replyBody) => {
+    setError('');
+    const res = await fetch(`${API}/tmail/reply`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token,
+      },
+      body: JSON.stringify({ parentId, body: replyBody })
+    });
+    if (res.ok) {
+      loadInbox();
+      loadSent();
+    } else {
+      const data = await res.json();
+      setError(data.message || 'Reply failed');
     }
   };
 
@@ -183,89 +180,65 @@ function App() {
         height: '100vh',
         minWidth: '70vw',
         padding: 10,
-        boxSizing: 'border-box',
-        fontFamily: 'Arial, sans-serif',
-        gap: '20px'
+        flexDirection: 'column',
       }}
     >
-      <div
-        className="left-panel"
-        style={{
-          flexBasis: '30%',
-          minWidth: 300,
-          borderRight: '1px solid #ccc',
-          paddingRight: 20,
-          overflowY: 'auto',
-          boxSizing: 'border-box',
-        }}
-      >
-        <h1>Hello, {username}</h1>
-        <ComposeForm
-          to={to}
-          setTo={setTo}
-          subject={subject}
-          setSubject={setSubject}
-          body={body}
-          setBody={setBody}
-          onSend={sendMail}
-        />
-        <button onClick={logout} style={{ backgroundColor: '#d9534f' }}>
-          Logout
-        </button>
-        <div style={{ fontSize: '0.9em', color: '#888', padding: '10px 0' }}> 
-          Version: {ver}
+      <header>
+        <h2>TMail</h2>
+        <div>
+          <span style={{ marginRight: 8 }}>Logged in as <b>{username}</b></span>
+          <button onClick={logout}>Logout</button>
         </div>
-      </div>
-
-      <div
-        className="right-panel"
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          boxSizing: 'border-box',
-        }}
-      >
-        <div
-          style={{
-            marginBottom: 15,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '10px'
-          }}
-        >
-          <div>
-            <button disabled={view === 'inbox'} onClick={() => setView('inbox')} style={{ marginRight: 10 }}>
-              Inbox
-            </button>
-            <button disabled={view === 'sent'} onClick={() => setView('sent')}>
-              Sent
-            </button>
-          </div>
-        </div>
-
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          {view === 'inbox' && (
-            <Inbox
-              messages={inbox}
-              onRefresh={loadInbox}
-              sortBy={sortByInbox}
-              setSortBy={setSortByInbox}
+      </header>
+      <main style={{ display: 'flex', flex: 1, gap: '32px' }}>
+        <section style={{ flex: 1 }}>
+          <Inbox
+            messages={inbox}
+            onRefresh={loadInbox}
+            sortBy={inboxSortBy}
+            setSortBy={setInboxSortBy}
+            onReply={handleReply}
+          />
+        </section>
+        <section style={{ flex: 1 }}>
+          <Sent
+            messages={sent}
+            onRefresh={loadSent}
+            sortBy={sentSortBy}
+            setSortBy={setSentSortBy}
+            onReply={handleReply}
+          />
+        </section>
+        <section style={{ flex: 1, maxWidth: 350 }}>
+          <h3>Send Mail</h3>
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              sendMail();
+            }}
+          >
+            <input
+              placeholder="To"
+              value={to}
+              onChange={e => setTo(e.target.value)}
+              required
             />
-          )}
-          {view === 'sent' && (
-            <Sent
-              messages={sent}
-              onRefresh={loadSent}
-              sortBy={sortBySent}
-              setSortBy={setSortBySent}
+            <input
+              placeholder="Subject"
+              value={subject}
+              onChange={e => setSubject(e.target.value)}
             />
-          )}
-        </div>
-      </div>
+            <textarea
+              placeholder="Body"
+              value={body}
+              onChange={e => setBody(e.target.value)}
+              required
+            />
+            <button type="submit">Send</button>
+          </form>
+          {error && <p style={{ color: 'red' }}>{error}</p>}
+        </section>
+      </main>
     </div>
   );
 }

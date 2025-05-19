@@ -2,8 +2,8 @@ import React from 'react';
 import Message from './Message';
 import SortSelect from './SortSelect';
 
-function Sent({ messages, onRefresh, sortBy, setSortBy }) {
-  const sortedMessages = [...messages];
+function Sent({ messages, onRefresh, sortBy, setSortBy, onReply }) {
+  const sortedMessages = [...(messages || [])];
 
   sortedMessages.sort((a, b) => {
     if (sortBy === 'date-desc') return new Date(b.timestamp) - new Date(a.timestamp);
@@ -31,7 +31,7 @@ function Sent({ messages, onRefresh, sortBy, setSortBy }) {
         <p>No sent messages</p>
       ) : (
         sortedMessages.map(msg => (
-          <Message key={msg.id} message={msg} />
+          <Message key={msg.id} message={msg} onReply={onReply} replies={msg.replies || []} />
         ))
       )}
     </div>
